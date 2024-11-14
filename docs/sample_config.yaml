@@ -1,0 +1,29 @@
+pipeline:
+  name: "example_pipeline"
+  version: "1.0"
+  
+  sources:
+    - name: "source1"
+      type: "postgres"
+      query: "SELECT * FROM table"
+      
+  transformations:
+    - name: "transform1"
+      type: "sql"
+      definition: "transformation.sql"
+      
+  quality_checks:
+    - type: "completeness"
+      rules: "completeness_rules.yaml"
+      
+  destinations:
+    - name: "dest1"
+      type: "s3"
+      format: "parquet"
+      
+  monitoring:
+    prometheus:
+      enabled: true
+      metrics:
+        - pipeline_execution_time
+        - records_processed
