@@ -1,0 +1,29 @@
+name: "Transformation1"
+imports:
+  - "TransformationFunctions1.scala"
+  - "TransformationFunctions2.scala"
+
+inputs:
+  - [val1, Int]
+  - [val2, String]
+#.
+#.
+# will require a helper CLI tool that would infer schema
+#.
+#.
+
+outputs:
+  - "*"  # Pass-through all inputs except val1
+  - val1:
+      type: "Input"
+      function: "TransformationFunctions1.f1"
+      output: "val1Transformed"
+  - newField1:
+      type: "Counter" #or Aggregation
+      function: "TransformationFunctions1.folder1"
+      output: "occurence_counter"
+#.
+#.
+#.
+#.
+#.
