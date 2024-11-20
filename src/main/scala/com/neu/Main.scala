@@ -1,27 +1,16 @@
+package com.neu
+
 import akka.actor.ActorSystem
-import com.typesafe.config.ConfigFactory
-import com.crobox.clickhouse.ClickhouseClient
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import com.neu.Main.system.dispatcher
+import com.neu.connectors.CKHConnector
 
-object ClickhouseExample {
-  def main(args: Array[String]): Unit = {
-    implicit val system: ActorSystem = ActorSystem("clickhouse-example")
+object Main extends App {
+  implicit val system: ActorSystem = ActorSystem("clickhouse-example")
 
-    val config =ConfigFactory.load()
+  val connector = CKHConnector()
 
-    val client = new ClickhouseClient(Some(config))
+  connector.executeQuery("SELECT 1")
+    .map(result => println(s"Query result: $result"))
+    .onComplete(_ => system.terminate())
 
-    val query: Future[String] = client.query("SELECT 1")
-
-    query.map { result =>
-      println(s"Query result: $result")
-    }.recover {
-      case e: Exception => println(s"Query failed: ${e.getMessage}")
-    }.onComplete { _ =>
-      system.terminate()
-    }
-
-    Thread.sleep(5000)
-  }
 }
