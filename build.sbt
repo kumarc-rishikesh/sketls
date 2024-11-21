@@ -15,5 +15,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http" % akkaHTTPVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion
+  "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
+  "software.amazon.awssdk" % "s3" % "2.19.33",
+  "com.typesafe" % "config" % "1.4.2"
 )
