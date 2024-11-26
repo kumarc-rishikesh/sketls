@@ -10,7 +10,7 @@ object Main {
       .master("local[*]")
       .getOrCreate()
 
-    val data = spark.read.option("header", "true").csv("london_crime_by_lsoa.csv")
+    val data = spark.read.option("header", "true").csv("london_crime_by_lsoa_sample.csv")
 
     // Example YAML-like Quality Check Config
     val qualityCheckConfig = Seq(
