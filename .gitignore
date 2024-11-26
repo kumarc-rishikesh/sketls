@@ -8,3 +8,4 @@ project/target/
 .metals/
 project/boot/
 project/target/
+london_crime_by_lsoa.csv
