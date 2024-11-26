@@ -15,5 +15,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http" % akkaHTTPVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-  "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion
+  "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
+  "org.apache.spark" %% "spark-core" % "3.4.0",
+  "org.apache.spark" %% "spark-sql" % "3.4.0"
 )
