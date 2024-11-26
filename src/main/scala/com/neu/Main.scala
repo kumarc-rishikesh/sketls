@@ -9,7 +9,7 @@ object Main {
       .appName("Quality Checks Example")
       .master("local[*]")
       .getOrCreate()
-    
+
     val data = spark.read.option("header", "true").csv("london_crime_by_lsoa.csv")
 
     // Example YAML-like Quality Check Config
