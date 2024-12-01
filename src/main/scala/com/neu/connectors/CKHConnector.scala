@@ -1,6 +1,6 @@
 package com.neu.connectors
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.typesafe.config.ConfigFactory
 import com.crobox.clickhouse.ClickhouseClient
 import com.crobox.clickhouse.stream.ClickhouseSink
