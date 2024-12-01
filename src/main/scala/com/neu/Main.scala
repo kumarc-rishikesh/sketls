@@ -15,19 +15,21 @@ object Main extends App {
   implicit val actorSystem: ActorSystem = ActorSystem("clickhouse-example")
   implicit val ec: ExecutionContext = actorSystem.dispatcher
 
-  val connector = CKHConnector()(actorSystem, ec)
+  val connector = CKHConnector()
   val client = connector.client
 
   def writeCrimeData(): Unit = {
-    val crimeData: IO[Table[CrimeData]] = Table.parseFile[Table[CrimeData]]("/home/rkc/Code/scetls/src/main/resources/london_crime_by_lsoa_trunc1.csv")
-    crimeData.attempt.unsafeRunSync() match {
-      case Right(table) =>
+    val crimeData: IO[Table[CrimeData]] = Table.parseFile[Table[CrimeData]]("/home/rkc/Code/scetls/src/main/resources/london_crime_by_lsoa_trunc.csv")
+    crimeData.unsafeRunSync() match {
+      case table =>
         table.foreach { crime =>
-          println(crime)
-          client.sink("INSERT INTO crime_data (lsoa_code, borough, major_category, minor_category, value, year, month) VALUES ", Source.single(ByteString(s"('${crime.lsoa_code}', '${crime.borough}', '${crime.major_category}', '${crime.minor_category}', ${crime.value}, ${crime.year}, ${crime.month})"))).map(result => println(result))(ec)
+          val insertQuery = s"""
+          ('${crime.lsoa_code}', '${crime.borough}', '${crime.major_category}',
+           '${crime.minor_category}', ${crime.value}, ${crime.year}, ${crime.month})
+          """
+          client.sink("INSERT INTO crime_data VALUES ",Source.single(ByteString(insertQuery)))
+          Thread.sleep(2)
         }
-      case Left(error) =>
-        println(s"Error parsing file: $error")
     }
   }
 
