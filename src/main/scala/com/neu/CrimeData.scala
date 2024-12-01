@@ -1,12 +1,6 @@
 package com.neu
 
-import cats.effect.IO
-import cats.syntax.apply
 import com.phasmidsoftware.parse._
-import com.phasmidsoftware.table.Table
-
-import scala.util.{Failure, Success, Try}
-import scala.util.matching.Regex
 
 case class CrimeData(
                       lsoa_code: String,
