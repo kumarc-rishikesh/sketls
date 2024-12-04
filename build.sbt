@@ -15,6 +15,9 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http" % akkaHTTPVersion,
   "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
+  "software.amazon.awssdk" % "s3" % "2.19.33",
+  "com.typesafe" % "config" % "1.4.2"
   "com.crobox.clickhouse" %% "client" % "1.2.6",
   "org.slf4j" % "slf4j-simple" % "1.7.36",
   "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "6.0.1",
