@@ -1,0 +1,15 @@
+quality_checks:
+  - type: "null_check"
+    column: "borough"
+
+  - type: "type_check"
+    column: "year"
+    expected_type: "int"
+
+  - type: "range_check"
+    column: "values"
+    min: "0"
+    max: "1000"
+
+  - type: "uniqueness_check"
+    column: "lsoa_code"
