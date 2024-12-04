@@ -81,3 +81,5 @@ object ConfigLoader {
     parser.parse(yamlString).flatMap(_.as[JobConfig])
   }
 }
+
+
