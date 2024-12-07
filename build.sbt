@@ -18,6 +18,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-spray-json" % akkaHTTPVersion,
   "io.circe" %% "circe-yaml" % "1.15.0",
   "io.circe" %% "circe-generic-extras" % "0.14.4",
-  "org.typelevel" %% "cats-core" % "2.12.0"
+  "org.typelevel" %% "cats-core" % "2.12.0",
+  "org.apache.spark" %% "spark-core" % "3.4.0",
+  "org.apache.spark" %% "spark-sql" % "3.4.0"
 )
 resolvers += "Akka library repository".at("https://repo.akka.io/maven")

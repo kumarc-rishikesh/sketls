@@ -4,13 +4,13 @@ imports:
   - "TransformationFunctions2.scala"
 
 inputs:
-  - [val1, Int]
-  - [val2, String]
-#.
-#.
-# will require a helper CLI tool that would infer schema
-#.
-#.
+  - [lsoa_code, String]
+  - [borough, String]
+  - [major_category, String]
+  - [minor_category, String]
+  - [value, Int]
+  - [year, Int]
+  - [month, Int]
 
 outputs:
   - "*"  # Pass-through all inputs except val1
@@ -22,8 +22,3 @@ outputs:
       type: "Counter" #or Aggregation
       function: "TransformationFunctions1.folder1"
       output: "occurence_counter"
-#.
-#.
-#.
-#.
-#.
