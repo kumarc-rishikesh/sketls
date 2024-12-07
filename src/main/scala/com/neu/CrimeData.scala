@@ -1,17 +1,16 @@
 package com.neu
 
-import com.phasmidsoftware.parse._
 
-case class CrimeData(
-                      lsoa_code: String,
-                      borough: String,
-                      major_category: String,
-                      minor_category: String,
-                      value: Int,
-                      year: Int,
-                      month: Int
-                    )
+import org.apache.spark.sql.types._
 
-object CrimeData extends TableParserHelper[CrimeData]() {
-  def cellParser: CellParser[CrimeData] = cellParser7(apply)
+object CrimeData {
+  val schema = StructType(Array(
+    StructField("lsoa_code", StringType, nullable = false),
+    StructField("borough", StringType, nullable = false),
+    StructField("major_category", StringType, nullable = false),
+    StructField("minor_category", StringType, nullable = false),
+    StructField("value", IntegerType, nullable = false),
+    StructField("year", IntegerType, nullable = false),
+    StructField("month", IntegerType, nullable = false)
+  ))
 }
