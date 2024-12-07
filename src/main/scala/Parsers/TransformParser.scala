@@ -6,12 +6,12 @@ import org.apache.spark.sql.types._
 
 object YamlParser extends App {
   case class Transformation(
-                             name: String,
-                             imports: List[String],
-                             inputs: List[(String, String)]
-                           )
+      name: String,
+      imports: List[String],
+      inputs: List[(String, String)]
+  )
 
-  val transformSource = scala.io.Source.fromFile("docs/sample_transformation_config.yaml")
+  val transformSource     = scala.io.Source.fromFile("docs/sample_transformation_config.yaml")
   val transformYAMLString = transformSource.mkString
   transformSource.close()
 
@@ -25,7 +25,7 @@ object YamlParser extends App {
             name,
             dataType match {
               case "String" => StringType
-              case "Int" => IntegerType
+              case "Int"    => IntegerType
             },
             nullable = false
           )
@@ -33,7 +33,7 @@ object YamlParser extends App {
       )
       println(schema)
     }
-    case Left(error) => println(s"Failed to parse: $error")
+    case Left(error)           => println(s"Failed to parse: $error")
   }
 
 }
