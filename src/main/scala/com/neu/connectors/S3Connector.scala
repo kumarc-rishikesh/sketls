@@ -1,21 +1,25 @@
 package com.neu.connectors
 
-import akka.actor.ActorSystem
-import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
+import java.io.File
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.core.sync.RequestBody
+import akka.actor.ActorSystem
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.{S3Client, S3Configuration}
 import software.amazon.awssdk.services.s3.model._
 
-import scala.concurrent.{ExecutionContext, Future}
 import java.net.URI
-import scala.jdk.CollectionConverters.CollectionHasAsScala
+import java.io.ByteArrayOutputStream
+import java.nio.charset.StandardCharsets
+import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 class S3Connector(implicit system: ActorSystem, ec: ExecutionContext) {
 
-  // Configure LocalStack S3 client
   private val s3Client: S3Client = S3Client.builder()
-    .endpointOverride(new URI("http://localhost:4566"))
+    .endpointOverride(new URI("http://localhost:4566")) // LocalStack S3 endpoint
     .region(Region.US_EAST_1)
     .credentialsProvider(StaticCredentialsProvider.create(
       AwsBasicCredentials.create("test", "test")
@@ -23,51 +27,82 @@ class S3Connector(implicit system: ActorSystem, ec: ExecutionContext) {
     .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
     .build()
 
-  // Read CSV from a bucket
-  def readCSVFromBucket(bucketName: String, fileName: String): Future[String] = Future {
-    val getObjectRequest = GetObjectRequest.builder()
-      .bucket(bucketName)
-      .key(fileName)
-      .build()
-
-    // Get the file from S3
-    val response = s3Client.getObject(getObjectRequest)
-    scala.io.Source.fromInputStream(response).mkString
+  // Read CSV from S3 and load into a Spark DataFrame
+  def readCSVFromBucketAsDataFrame(bucketName: String, fileName: String)
+                                  (implicit spark: SparkSession): Future[DataFrame] = Future {
+    val s3Uri = s"s3a://$bucketName/$fileName"
+    println(s"Reading data from: $s3Uri")
+    spark.read.option("header", "true").csv(s3Uri)
   }
 
-  // Write CSV to a bucket
-  def writeCSVToBucket(bucketName: String, fileName: String, content: String): Future[String] = Future {
-    // Check if the bucket exists, and if not, create it
+  // Write Spark DataFrame to S3 bucket as CSV
+  def writeDataFrameToBucket(bucketName: String, fileName: String, dataFrame: DataFrame): Future[Unit] = Future {
     try {
-      val listBucketsResponse = s3Client.listBuckets()
-      val bucketExists = listBucketsResponse.buckets().asScala.exists(_.name() == bucketName)
+      // Ensure the bucket exists
+      if (!doesBucketExist(bucketName)) createBucket(bucketName)
 
-      if (!bucketExists) {
-        val createBucketRequest = CreateBucketRequest.builder()
-          .bucket(bucketName)
-          .build()
-        s3Client.createBucket(createBucketRequest)
-        println(s"Bucket '$bucketName' created.")
-      }
+      // Write DataFrame to a temporary directory with overwrite mode
+      val tempDir = System.getProperty("java.io.tmpdir") // Temporary directory
+      val tempFilePath = s"$tempDir/dataframe-${System.currentTimeMillis()}.csv"
 
-      // Upload the file content after ensuring the bucket exists
+      // Write the DataFrame with overwrite mode
+      dataFrame.write
+        .option("header", "true")
+        .mode("overwrite") // Overwrite existing file if it exists
+        .csv(tempFilePath)
+
+      // Upload the file to S3
       val putObjectRequest = PutObjectRequest.builder()
         .bucket(bucketName)
         .key(fileName)
         .build()
 
-      s3Client.putObject(putObjectRequest, RequestBody.fromString(content))
+      val fileToUpload = new File(tempFilePath)
+      s3Client.putObject(putObjectRequest, RequestBody.fromFile(fileToUpload))
+      println(s"DataFrame successfully uploaded to s3://$bucketName/$fileName")
 
-      s"File '$fileName' uploaded to bucket '$bucketName'."
+      // Clean up temporary file
+      fileToUpload.delete()
     } catch {
-      case ex: Exception =>
-        throw new RuntimeException(s"Error while checking or creating bucket: ${ex.getMessage}")
+      case e: Exception =>
+        println(s"Error uploading DataFrame to S3: ${e.getMessage}")
+        throw e
     }
+  }
+  // Check if the bucket exists
+  private def doesBucketExist(bucketName: String): Boolean = {
+    try {
+      val listBucketsResponse = s3Client.listBuckets()
+      listBucketsResponse.buckets().asScala.exists(_.name() == bucketName)
+    } catch {
+      case e: Exception =>
+        println(s"Error checking bucket existence: ${e.getMessage}")
+        false
+    }
+  }
+  // Create a bucket
+  private def createBucket(bucketName: String): Unit = {
+    try {
+      val createBucketRequest = CreateBucketRequest.builder().bucket(bucketName).build()
+      s3Client.createBucket(createBucketRequest)
+      println(s"Bucket '$bucketName' created.")
+    } catch {
+      case e: Exception =>
+        println(s"Error creating bucket: ${e.getMessage}")
+        throw e
+    }
+  }
+  // Convert DataFrame to CSV as a string
+  private def convertDataFrameToCSV(dataFrame: DataFrame): String = {
+    val outputStream = new ByteArrayOutputStream()
+    val schema = dataFrame.schema.fieldNames.mkString(",") // Header row
+    val rows = dataFrame.collect().map(row => row.toSeq.mkString(",")) // Rows as CSV
+    val csvContent = (Seq(schema) ++ rows).mkString("\n") // Combine header and rows
+    outputStream.write(csvContent.getBytes(StandardCharsets.UTF_8))
+    outputStream.toString(StandardCharsets.UTF_8.name())
   }
 }
 
 object S3Connector {
-  def apply()(implicit system: ActorSystem, ec: ExecutionContext): S3Connector = {
-    new S3Connector()
-  }
+  def apply()(implicit system: ActorSystem, ec: ExecutionContext): S3Connector = new S3Connector()
 }
