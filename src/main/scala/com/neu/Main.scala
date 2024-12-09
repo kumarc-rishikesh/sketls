@@ -1,8 +1,8 @@
 package com.neu
 
 import akka.actor.ActorSystem
-import akka.http.impl.util.StreamUtils.OnlyRunInGraphInterpreterContext.executionContext
-import com.neu.Main.materializer.executionContext
+//import akka.http.impl.util.StreamUtils.OnlyRunInGraphInterpreterContext.executionContext
+//import com.neu.Main.materializer.executionContext
 import com.neu.connectors.{S3Connector, S3LocalstackActions}
 
 import scala.concurrent.ExecutionContext
@@ -10,7 +10,7 @@ import com.neu.connectors.CKHConnector
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.{Materializer, SystemMaterializer}
 import org.apache.spark.sql.SaveMode
-import connectors.CKHActions
+//import connectors.CKHActions
 import org.apache.spark.sql.SparkSession
 
 import java.util.Properties
@@ -22,6 +22,8 @@ import com.neu.connectors.PGDataUtils
 object Main extends App{
   implicit val actorSystem: ActorSystem = ActorSystem("clickhouse-example")
   implicit val ec: ExecutionContext = actorSystem.dispatcher
+  //implicit val ec: ExecutionContext = ExecutionContext.global
+
   implicit val materializer: Materializer = SystemMaterializer(actorSystem).materializer
   
   implicit val system: ActorSystem = ActorSystem("localstack-s3-example")
@@ -69,7 +71,7 @@ object Main extends App{
 
       // Example transformation (optional):
       val processedDF = df.select("lsoa_code") // Select specific columns, if needed
-      val writeFuture = PGDataUtils.writeDataUsingDF(df, jdbcUrl, tableNameToWrite, properties) // Using COPY
+      val writeFuture = PGDataUtils.writeDataPG(df, jdbcUrl, tableNameToWrite, properties) // Using COPY
 
       writeFuture.onComplete {
         case Success(_) =>

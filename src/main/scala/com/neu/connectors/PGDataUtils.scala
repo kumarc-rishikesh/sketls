@@ -12,8 +12,8 @@ object PGDataUtils {
     spark.read.jdbc(jdbcUrl, tableName, properties)
   }
 
-  // More performant method for writing using DataFrame write
-  def writeDataUsingDF(dataFrame: DataFrame, jdbcUrl: String, tableName: String, properties: Properties): Future[Unit] = Future {
+  // More performant method for writing using DataFrame write, writeDataPG
+  def writeDataPG(dataFrame: DataFrame, jdbcUrl: String, tableName: String, properties: Properties): Future[Unit] = Future {
     try {
 
         val stringWriter = new StringWriter()
