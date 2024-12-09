@@ -1,29 +1,54 @@
 pipeline:
-  name: "example_pipeline"
-  version: "1.0"
-  
-  sources:
-    - name: "source1"
-      type: "postgres"
-      query: "SELECT * FROM table"
+  name: "example_pipeline_1"
+  jobs:
+    - jobname: "example_job_1"
       
-  transformations:
-    - name: "transform1"
-      type: "sql"
-      definition: "transformation.sql"
+      trigger:
+        - type: "cron"
+          value: "0 1 * * *"
       
-  quality_checks:
-    - type: "completeness"
-      rules: "completeness_rules.yaml"
+      sources:
+        - type: "postgres"
+          db: "db1"
+          query: "SELECT * FROM table"
+          
+      transformations:
+        - definition: "transformation.yaml"
+          
+      quality_checks:
+        - type: "completeness"
+          rules: "completeness_rules.yaml"
+          
+      destinations:
+        - type: "s3"
+          bucket: "bucket_name"
+          format: "jsonl"
+          
+      monitoring:
+        prometheus:
+          enabled: true
+          metrics:
+            - pipeline_execution_time
+            - records_processed
+
+    - jobname: "example_job_2"
+
+      trigger:
+        - type: "dependent"
+          value: "job1"
       
-  destinations:
-    - name: "dest1"
-      type: "s3"
-      format: "parquet"
-      
-  monitoring:
-    prometheus:
-      enabled: true
-      metrics:
-        - pipeline_execution_time
-        - records_processed
+      sources:
+        - type: "s3"
+          bucket: "bucket2"
+          
+      transformations:
+        - definition: "transformation2.yaml"
+          
+      quality_checks:
+        - type: "completeness"
+          rules: "completeness_rules.yaml"
+#.
+#.
+#.
+#.
+#.
