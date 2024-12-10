@@ -21,8 +21,14 @@ class CKHActions(    sparkSession: SparkSession,
     rows.grouped(1000).foldLeft(Future.successful(())) { (acc, batch) =>
       acc.flatMap { _ =>
         val batchValues = batch.map { row =>
-          s"""('${row.getString(0)}', '${row.getString(1)}', '${row.getString(2)}',
-             |'${row.getString(3)}', ${row.getInt(4)}, ${row.getInt(5)}, ${row.getInt(6)})""".stripMargin
+          println(row)
+          val values = row.toSeq.map {
+            case null => "NULL"
+            case s: String => s"'${s.replace("'", "''")}'" // Escape single quotes
+            case n: Number => n.toString
+            case value => s"'${value.toString}'"
+          }
+          s"(${values.mkString(", ")})"
         }.mkString(",\n")
 
         if (batchValues.nonEmpty) {
