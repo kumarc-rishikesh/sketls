@@ -1,6 +1,6 @@
 package com.neu
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import com.neu.connectors.{S3Connector, S3LocalstackActions}
 import scala.concurrent.ExecutionContext
 import org.apache.spark.sql.SparkSession
@@ -19,7 +19,6 @@ object Main extends App {
     .config("spark.hadoop.fs.s3a.path.style.access", "true")            // Required for LocalStack
     .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")  // Set the implementation for s3a
     .config("spark.hadoop.fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")  // Use Simple Credentials Provider
-    .config("hadoop.home.dir", "C:\\Users\\mitha\\Downloads\\winutils\\hadoop-3.0.0\\bin")
     .getOrCreate()
 
   val s3Connector = S3Connector()

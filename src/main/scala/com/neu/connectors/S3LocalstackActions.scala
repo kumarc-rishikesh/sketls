@@ -1,7 +1,9 @@
 package com.neu.connectors
 
-import akka.actor.ActorSystem
+import com.neu.CrimeData
+import org.apache.pekko.actor.ActorSystem
 import org.apache.spark.sql.SparkSession
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.StdIn
 
@@ -15,8 +17,9 @@ object S3LocalstackActions {
     println("Enter the CSV file name to read:")
     val inFileName = StdIn.readLine()
 
+    val schema = CrimeData.schema
     // Read the file content into a DataFrame
-    s3Connector.readCSVFromBucketAsDataFrame(readBucketName, inFileName)
+    s3Connector.readDataS3(readBucketName, inFileName, schema)
       .flatMap { dataFrame =>
         println(s"Data read from '$inFileName':")
         dataFrame.show() // Display sample rows
@@ -30,7 +33,7 @@ object S3LocalstackActions {
 
         if (newFileName.nonEmpty) {
           // Write the DataFrame to the new file
-          s3Connector.writeDataFrameToBucket(writeBucketName, newFileName, dataFrame)
+          s3Connector.writeDataS3(writeBucketName, newFileName, dataFrame)
         } else {
           Future.successful(println("No new file name provided, skipping write operation."))
         }

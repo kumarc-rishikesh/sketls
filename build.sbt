@@ -21,11 +21,10 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "3.4.0",
   "org.apache.hadoop" % "hadoop-aws" % "3.2.0",
   "software.amazon.awssdk" % "s3" % "2.20.49",
-  "com.typesafe" % "config" % "1.4.2"
+  "com.typesafe" % "config" % "1.4.2",
   "com.crobox.clickhouse" %% "client" % "1.2.6",
   "org.slf4j" % "slf4j-simple" % "1.7.36",
   "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "6.0.1",
-  "com.phasmidsoftware" %% "tableparser" % "1.1.3",
   "org.typelevel" %% "cats-core" % "2.9.0",
   "ch.qos.logback" % "logback-classic" % "1.4.11"
 )
