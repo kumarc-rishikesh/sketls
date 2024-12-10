@@ -31,6 +31,8 @@ libraryDependencies ++= Seq(
   "org.slf4j" % "slf4j-simple" % "1.7.36",
   "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "6.0.1",
   "org.typelevel" %% "cats-core" % "2.9.0",
-  "ch.qos.logback" % "logback-classic" % "1.4.11"
+  "ch.qos.logback" % "logback-classic" % "1.4.11",
+  "org.apache.spark" %% "spark-core" % "3.4.0",
+  "org.apache.spark" %% "spark-sql" % "3.4.0"
 )
 resolvers += "Akka library repository".at("https://repo.akka.io/maven")
