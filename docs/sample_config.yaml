@@ -4,7 +4,7 @@ pipeline:
     - jobname: "example_job_1"
 
       trigger:
-        - type: "cron"
+          type: "cron"
           value: "0 1 * * *"
       
       source:

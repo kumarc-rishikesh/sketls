@@ -4,15 +4,13 @@ import com.neu.Pipeline.Parser.{ConfigParser, ELParser, TransformParser}
 import org.apache.spark
 import org.apache.spark.sql.functions.col
 
-
-
 class PipelineGenerator {
-  def generateJobFunctions(pipelineConfig: String): Either[String, List[() => Unit]] = {
+  def generateJobFunctions(pipelineConfig: String): Either[String, List[(() => Unit, String)]] = {
     ConfigParser.parsePipelineConfig(pipelineConfig) match {
       case Right(pipeline) =>
         Right(
           pipeline.pipeline.jobs.map { job =>
-            () => {
+            (() => {
               // Create parsers
               val elParser = ELParser(job)
               val transformParser = TransformParser(job.transformation.definition).getOrElse(
@@ -30,7 +28,7 @@ class PipelineGenerator {
                 ): _*
               )
               elParser.parseDestination(job.destination, transformedDF)
-            }
+            }, job.trigger.value)
           }
         )
       case Left(error) =>
@@ -38,4 +36,3 @@ class PipelineGenerator {
     }
   }
 }
-

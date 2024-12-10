@@ -11,7 +11,7 @@ case class Pipeline_(name: Option[String], jobs: List[Job])
 
 case class Job(
     jobname: String,
-    trigger: List[Trigger],
+    trigger: Trigger,
     source: Source,
     transformation: Transformations,
     quality_checks: List[QualityCheck],
