@@ -1,6 +1,10 @@
 package com.neu.Pipeline.Generator
 
 import com.neu.Pipeline.Parser.{ConfigParser, ELParser, TransformParser}
+import org.apache.spark
+import org.apache.spark.sql.functions.col
+
+
 
 class PipelineGenerator {
   def generateJobFunctions(pipelineConfig: String): Either[String, List[() => Unit]] = {
@@ -17,7 +21,14 @@ class PipelineGenerator {
 
               // Execute pipeline steps
               val sourceDF = elParser.parseSource(job.source)
-              val transformedDF = transformParser.outputToFunction(sourceDF)
+              val ipSchema = transformParser.inputToStruct
+              val opSchema = transformParser.outputToStruct(ipSchema)
+              val transformedDF_ = transformParser.outputToFunction(sourceDF)
+              val transformedDF = transformedDF_.select(
+                opSchema.fields.map(field =>
+                  col(field.name).cast(field.dataType).as(field.name)
+                ): _*
+              )
               elParser.parseDestination(job.destination, transformedDF)
             }
           }
