@@ -2,17 +2,17 @@ package com.neu.Pipeline.Parser
 
 import org.apache.spark.sql.DataFrame
 
-class ELParser (source: Source, destination: Destination) {
+class ELParser(source: Source, destination: Destination) {
 
   val parseSource: Source => DataFrame = source => {
     source.`type` match {
       case "clickhouse" =>
         handleClickhouseSource(source.db.getOrElse(""), source.query.getOrElse(""))
-      case "s3" =>
+      case "s3"         =>
         handleS3Source(source.bucket.getOrElse(""))
-      case "postgres" =>
+      case "postgres"   =>
         handlePgSource(source.db.getOrElse(""), source.query.getOrElse(""))
-      case unknownType =>
+      case unknownType  =>
         throw new Exception(s"Unsupported source type: $unknownType")
     }
   }
@@ -21,11 +21,11 @@ class ELParser (source: Source, destination: Destination) {
     destination.`type` match {
       case "clickhouse" =>
         handleClickhouseDestination(df, destination.db.getOrElse(""), destination.query.getOrElse(""))
-      case "s3" =>
+      case "s3"         =>
         handleS3Destination(df, destination.bucket.getOrElse(""))
-      case "postgres" =>
+      case "postgres"   =>
         handlePgDestination(df, destination.db.getOrElse(""), destination.query.getOrElse(""))
-      case unknownType =>
+      case unknownType  =>
         throw new Exception(s"Unsupported destination type: $unknownType")
     }
   }
@@ -56,5 +56,5 @@ class ELParser (source: Source, destination: Destination) {
 }
 
 object ELParser {
-  def apply(job:Job): ELParser = new ELParser(job.source,job.destination)
+  def apply(job: Job): ELParser = new ELParser(job.source, job.destination)
 }

@@ -27,7 +27,8 @@ case class Source(
     `type`: String,
     db: Option[String],
     query: Option[String],
-    bucket: Option[String]
+    bucket: Option[String],
+    filename: Option[String]
 )
 
 case class Transformations(
@@ -40,11 +41,12 @@ case class QualityCheck(
 )
 
 case class Destination(
-                   `type`: String,
-                   db: Option[String],
-                   query: Option[String],
-                   bucket: Option[String]
-                 )
+    `type`: String,
+    db: Option[String],
+    query: Option[String],
+    bucket: Option[String],
+    filename: Option[String]
+)
 
 object ConfigParser {
   def parsePipelineConfig(yamlString: String): Either[Error, Pipeline] = {

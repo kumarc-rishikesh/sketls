@@ -13,23 +13,23 @@ object TransformationFunctionParser {
   }
 
   def getCompiledMethodInputType(functions: Any, methodName: String): (DataFrame, String) => DataFrame = {
-    val method = functions.getClass.getMethod(methodName,
-      classOf[org.apache.spark.sql.DataFrame],
-      classOf[String]
-    )
+    val method = functions.getClass.getMethod(methodName, classOf[org.apache.spark.sql.DataFrame], classOf[String])
 
-    (df: DataFrame, ipFieldInfo: String) =>
-      method.invoke(functions, df, ipFieldInfo).asInstanceOf[DataFrame]
+    (df: DataFrame, ipFieldInfo: String) => method.invoke(functions, df, ipFieldInfo).asInstanceOf[DataFrame]
   }
 
-  def getCompiledMethodDerivedType(functions: Any, methodName: String): (DataFrame, Seq[String], (String, DataType)) => DataFrame = {
-    val method = functions.getClass.getMethod(methodName,
+  def getCompiledMethodDerivedType(
+      functions: Any,
+      methodName: String
+  ): (DataFrame, Seq[String], (String, DataType)) => DataFrame = {
+    val method = functions.getClass.getMethod(
+      methodName,
       classOf[org.apache.spark.sql.DataFrame],
       classOf[Seq[String]],
       classOf[(String, DataType)]
     )
 
-    (df: DataFrame, ipFieldInfo: Seq[String], opFieldInfo:(String,DataType)) =>
+    (df: DataFrame, ipFieldInfo: Seq[String], opFieldInfo: (String, DataType)) =>
       method.invoke(functions, df, ipFieldInfo, opFieldInfo).asInstanceOf[DataFrame]
   }
 }

@@ -8,12 +8,12 @@ pipeline:
           value: "0 1 * * *"
       
       source:
-          type: "postgres"
+          type: "clickhouse"
           db: "db1"
-          query: "SELECT * FROM table"
+          query: "SELECT * FROM crime_data"
           
       transformations:
-          definition: "transformation.yaml"
+          definition: "sample_transformation_config.yaml"
           
       quality_checks:
         - type: "completeness"
@@ -21,21 +21,23 @@ pipeline:
           
       destination:
           type: "s3"
-          bucket: "bucket_name"
+          bucket: "test"
+          filename: "xyz.csv"
 
     - jobname: "example_job_2"
 
       trigger:
-        - type: "dependent"
-          value: "job1"
-      
+        - type: "cron"
+          value: "10 1 * * *"
+
       source:
-        - type: "s3"
-          bucket: "bucket2"
-          
+          type: "s3"
+          bucket: "test"
+          filename: "xyz.csv"
+
       transformations:
-        - definition: "transformation2.yaml"
-          
+        - definition: "sample_transformation_config2.yaml"
+
       quality_checks:
         - type: "completeness"
           rules: "completeness_rules.yaml"
