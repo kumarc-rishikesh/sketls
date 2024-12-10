@@ -1,9 +1,9 @@
-package Parsers
+package com.neu.Pipeline.Parser
 
-import io.circe.yaml.parser
-import io.circe.{Error, ParsingFailure}
-import io.circe.generic.auto._
 import cats.syntax.either._
+import io.circe.Error
+import io.circe.generic.auto._
+import io.circe.yaml.parser
 
 case class Pipeline(pipeline: Pipeline_)
 
@@ -12,11 +12,10 @@ case class Pipeline_(name: Option[String], jobs: List[Job])
 case class Job(
     jobname: String,
     trigger: List[Trigger],
-    sources: List[Source],
-    transformations: List[Transformations],
+    source: Source,
+    transformation: Transformations,
     quality_checks: List[QualityCheck],
-    destinations: Option[List[Destination]],
-    monitoring: Option[Monitoring]
+    destination: Destination
 )
 
 case class Trigger(
@@ -41,19 +40,11 @@ case class QualityCheck(
 )
 
 case class Destination(
-    `type`: String,
-    bucket: String,
-    format: String
-)
-
-case class Monitoring(
-    prometheus: PrometheusConfig
-)
-
-case class PrometheusConfig(
-    enabled: Boolean,
-    metrics: List[String]
-)
+                   `type`: String,
+                   db: Option[String],
+                   query: Option[String],
+                   bucket: Option[String]
+                 )
 
 object ConfigParser {
   def parsePipelineConfig(yamlString: String): Either[Error, Pipeline] = {
