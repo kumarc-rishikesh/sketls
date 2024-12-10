@@ -1,13 +1,13 @@
 package com.neu
 
 import akka.actor.{ActorSystem, Props}
-import com.neu.actors.{Orchestrator, RunB}
+import com.neu.actors.{Orchestrator, Run_placeholder_readDataPG}
 
 object Main {
   def main(args: Array[String]): Unit = {
     val system = ActorSystem("orchestration-system")
-    val orchestrator = system.actorOf(Props[Orchestrator], "orchestrator")
+    val orchestratorRef = system.actorOf(Props[Orchestrator], "orchestrator")
 
-    orchestrator ! RunB
+    orchestratorRef ! Run_placeholder_readDataPG
   }
 }
