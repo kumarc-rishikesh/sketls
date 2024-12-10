@@ -27,6 +27,10 @@ libraryDependencies ++= Seq(
   "org.typelevel" %% "cats-core" % "2.9.0",
   "ch.qos.logback" % "logback-classic" % "1.4.11",
   "org.apache.commons" % "commons-csv" % "1.10.0",
-  "org.apache.spark" %% "spark-sql" % "3.4.0"
+  "org.apache.spark" %% "spark-sql" % "3.4.0",
+
+  // Test libs
+  "org.scalatest" %% "scalatest" % "3.2.16" % Test,
+  "org.mockito" %% "mockito-scala" % "1.17.12" % Test
 )
 resolvers += "Akka library repository".at("https://repo.akka.io/maven")
