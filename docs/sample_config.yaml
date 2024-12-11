@@ -2,53 +2,46 @@ pipeline:
   name: "example_pipeline_1"
   jobs:
     - jobname: "example_job_1"
-      
+
       trigger:
-        - type: "cron"
+          type: "cron"
           value: "0 1 * * *"
       
-      sources:
-        - type: "postgres"
+      source:
+          type: "clickhouse"
           db: "db1"
-          query: "SELECT * FROM table"
+          query: "SELECT * FROM crime_data"
           
       transformations:
-        - definition: "transformation.yaml"
+          definition: "sample_transformation_config.yaml"
           
       quality_checks:
         - type: "completeness"
           rules: "completeness_rules.yaml"
           
-      destinations:
-        - type: "s3"
-          bucket: "bucket_name"
-          format: "jsonl"
-          
-      monitoring:
-        prometheus:
-          enabled: true
-          metrics:
-            - pipeline_execution_time
-            - records_processed
+      destination:
+          type: "s3"
+          bucket: "test"
+          filename: "xyz.csv"
 
     - jobname: "example_job_2"
 
       trigger:
-        - type: "dependent"
-          value: "job1"
-      
-      sources:
-        - type: "s3"
-          bucket: "bucket2"
-          
+        - type: "cron"
+          value: "10 1 * * *"
+
+      source:
+          type: "s3"
+          bucket: "test"
+          filename: "xyz.csv"
+
       transformations:
-        - definition: "transformation2.yaml"
-          
+        - definition: "sample_transformation_config2.yaml"
+
       quality_checks:
         - type: "completeness"
           rules: "completeness_rules.yaml"
-#.
-#.
-#.
-#.
-#.
+
+      destination:
+        - type: "s3"
+          bucket: "bucket_name"

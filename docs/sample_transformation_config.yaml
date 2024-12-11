@@ -1,29 +1,30 @@
 name: "Transformation1"
-imports:
-  - "TransformationFunctions1.scala"
-  - "TransformationFunctions2.scala"
+import:
+  "SampleScalaTransform.scala"
 
 inputs:
-  - [val1, Int]
-  - [val2, String]
-#.
-#.
-# will require a helper CLI tool that would infer schema
-#.
-#.
+  - [lsoa_code, String]
+  - [borough, String]
+  - [major_category, String]
+  - [minor_category, String]
+  - [value, Int]
+  - [year, Int]
+  - [month, Int]
 
+## input type MUST have functions that do not change datatype
+## if datatype changes must be made, use a derived type and drop the original column
 outputs:
-  - "*"  # Pass-through all inputs except val1
-  - val1:
-      type: "Input"
-      function: "TransformationFunctions1.f1"
-      output: "val1Transformed"
-  - newField1:
-      type: "Counter" #or Aggregation
-      function: "TransformationFunctions1.folder1"
-      output: "occurence_counter"
-#.
-#.
-#.
-#.
-#.
+  -   col: "borough"
+      type: "input"
+      function: "toLower"
+  -   col: "dateYYYYMMStr"
+      type: "derived"
+      function: "toDate"
+      using: ["year", "month"]
+      datatype: "String"
+  -   col: "month"
+      type: "input"
+      function: "drop"
+  -   col: "year"
+      type: "input"
+      function: "drop"
