@@ -11,7 +11,7 @@ object Functions {
     df.withColumn(ipFieldInfo, upper(col(ipFieldInfo)))
   }
 
-  def dateYYYYMMStr(df: DataFrame, ipFieldInfo: Seq[String], opFieldInfo: (String, DataType)): DataFrame = {
+  def toDateYYYYMM(df: DataFrame, ipFieldInfo: Seq[String], opFieldInfo: (String, DataType)): DataFrame = {
     val yearCol = ipFieldInfo(0)
     val monthCol = ipFieldInfo(1)
     val opFieldName = opFieldInfo._1

@@ -2,7 +2,7 @@ package com.neu.connectors
 
 import org.apache.spark.sql.{DataFrame, Encoders, SparkSession}
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.{Materializer, SystemMaterializer}
 import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import org.apache.pekko.util.ByteString
 import org.apache.spark.sql.types.StructType
@@ -12,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CKHActions(sparkSession: SparkSession, actorSystem: ActorSystem, ckhConnector: CKHConnector) {
   private val ckh_client                  = ckhConnector.client
   implicit val ec: ExecutionContext       = actorSystem.dispatcher
-  implicit val materializer: Materializer = materializer
+  implicit val materializer: Materializer = SystemMaterializer(actorSystem).materializer
 
   def writeDataCKH(df: DataFrame, tableName: String): Future[Unit] = {
     val rows = df.collect()

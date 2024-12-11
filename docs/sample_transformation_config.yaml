@@ -1,6 +1,6 @@
 name: "Transformation1"
 import:
-  "SampleScalaTransform.scala"
+  "./docs/SampleScalaTransform.scala"
 
 inputs:
   - [lsoa_code, String]
@@ -19,7 +19,7 @@ outputs:
       function: "toLower"
   -   col: "dateYYYYMMStr"
       type: "derived"
-      function: "toDate"
+      function: "toDateYYYYMM"
       using: ["year", "month"]
       datatype: "String"
   -   col: "month"
