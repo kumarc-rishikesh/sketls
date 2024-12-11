@@ -10,7 +10,7 @@ pipeline:
       source:
           type: "clickhouse"
           db: "db1"
-          query: "SELECT * FROM crime_data"
+          query: "SELECT * FROM crime_data FORMAT CSV"
           
       transformations:
           definition: "sample_transformation_config.yaml"

@@ -1,18 +1,17 @@
 package com.neu
 
-import com.neu.Pipeline.Parser.ConfigParser
+import com.neu.connectors.CKHConnector
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.{Materializer, SystemMaterializer}
+import connectors.CKHActions
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 object Main {
   def main(args: Array[String]): Unit = {
     println("Hello world")
   }
-//import com.neu.connectors.CKHConnector
-//import org.apache.pekko.actor.ActorSystem
-//import org.apache.pekko.stream.{Materializer, SystemMaterializer}
-//import connectors.CKHActions
-//import scala.concurrent.{ExecutionContext, Future}
-//import scala.util.{Failure, Success}
-
+}
 
 //object Main extends App {
 //  implicit val system: ActorSystem = ActorSystem("localstack-s3-example")

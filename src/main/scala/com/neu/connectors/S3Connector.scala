@@ -15,18 +15,22 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
 class S3Connector(implicit system: ActorSystem, ec: ExecutionContext) {
-  private val s3Client: S3Client = S3Client.builder()
+  private val s3Client: S3Client = S3Client
+    .builder()
     .endpointOverride(new URI("http://localhost:4566"))
     .region(Region.US_EAST_1)
-    .credentialsProvider(StaticCredentialsProvider.create(
-      AwsBasicCredentials.create("test", "test")
-    ))
+    .credentialsProvider(
+      StaticCredentialsProvider.create(
+        AwsBasicCredentials.create("test", "test")
+      )
+    )
     .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
     .build()
 
   // Read CSV from S3 and load into a Spark DataFrame
-  def readDataS3(bucketName: String, fileName: String, schema: StructType)
-                                  (implicit spark: SparkSession): Future[DataFrame] = Future {
+  def readDataS3(bucketName: String, fileName: String, schema: StructType)(implicit
+      spark: SparkSession
+  ): Future[DataFrame] = Future {
     val s3Uri = s"s3a://$bucketName/$fileName"
     println(s"Reading data from: $s3Uri")
     spark.read.schema(schema).option("header", "true").csv(s3Uri)
@@ -42,7 +46,8 @@ class S3Connector(implicit system: ActorSystem, ec: ExecutionContext) {
       tempFile.deleteOnExit()
 
       // Write DataFrame directly to a single CSV file
-      dataFrame.coalesce(1) // Ensure single file output
+      dataFrame
+        .coalesce(1) // Ensure single file output
         .write
         .option("header", "true")
         .mode("overwrite")
@@ -50,10 +55,11 @@ class S3Connector(implicit system: ActorSystem, ec: ExecutionContext) {
 
       // Find the actual CSV file in the output directory
       val outputDir = new File(tempFile.getParent + "/output")
-      val csvFile = outputDir.listFiles().find(_.getName.endsWith(".csv")).get
+      val csvFile   = outputDir.listFiles().find(_.getName.endsWith(".csv")).get
 
       // Upload to S3
-      val putObjectRequest = PutObjectRequest.builder()
+      val putObjectRequest = PutObjectRequest
+        .builder()
         .bucket(bucketName)
         .key(fileName)
         .contentType("text/csv")
@@ -84,7 +90,7 @@ class S3Connector(implicit system: ActorSystem, ec: ExecutionContext) {
     }
   }
   // Create a bucket
-  private def createBucket(bucketName: String): Unit = {
+  private def createBucket(bucketName: String): Unit       = {
     try {
       val createBucketRequest = CreateBucketRequest.builder().bucket(bucketName).build()
       s3Client.createBucket(createBucketRequest)

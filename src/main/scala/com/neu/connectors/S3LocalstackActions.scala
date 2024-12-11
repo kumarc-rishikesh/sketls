@@ -9,7 +9,12 @@ import scala.io.StdIn
 
 object S3LocalstackActions {
 
-  def performS3Operations()(implicit system: ActorSystem, ec: ExecutionContext, s3Connector: S3Connector, spark: SparkSession): Future[Unit] = {
+  def performS3Operations()(implicit
+      system: ActorSystem,
+      ec: ExecutionContext,
+      s3Connector: S3Connector,
+      spark: SparkSession
+  ): Future[Unit] = {
     // Get bucket and file details from the user
     println("Enter the S3 bucket name to read the file from:")
     val readBucketName = StdIn.readLine()
@@ -19,7 +24,8 @@ object S3LocalstackActions {
 
     val schema = CrimeData.schema
     // Read the file content into a DataFrame
-    s3Connector.readDataS3(readBucketName, inFileName, schema)
+    s3Connector
+      .readDataS3(readBucketName, inFileName, schema)
       .flatMap { dataFrame =>
         println(s"Data read from '$inFileName':")
         dataFrame.show() // Display sample rows
@@ -38,9 +44,8 @@ object S3LocalstackActions {
           Future.successful(println("No new file name provided, skipping write operation."))
         }
       }
-      .recover {
-        case ex: Exception =>
-          println(s"Error during S3 operations: ${ex.getMessage}")
+      .recover { case ex: Exception =>
+        println(s"Error during S3 operations: ${ex.getMessage}")
       }
   }
 }

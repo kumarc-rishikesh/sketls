@@ -42,7 +42,7 @@ case class QualityCheck(
 
 case class Destination(
     `type`: String,
-    db: Option[String],
+    table: Option[String],
     query: Option[String],
     bucket: Option[String],
     filename: Option[String]
