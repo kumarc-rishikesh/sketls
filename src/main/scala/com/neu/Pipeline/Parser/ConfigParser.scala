@@ -25,7 +25,7 @@ case class Trigger(
 
 case class Source(
     `type`: String,
-    db: Option[String],
+    table: Option[String],
     query: Option[String],
     bucket: Option[String],
     filename: Option[String]

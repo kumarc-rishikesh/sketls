@@ -1,6 +1,7 @@
 package com.neu.Pipeline.Parser
 
-import com.neu.Main.actorSystem
+import java.util.Properties
+import com.neu.connectors.PGDataUtils.{readDataPG, writeDataPG}
 import com.neu.connectors.{CKHActions, CKHConnector, S3Connector}
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.Materializer
@@ -18,14 +19,21 @@ class ELParser(
     val materializer: Materializer,
     val actorSystem: ActorSystem
 ) {
+
+  val jdbcUrl      = "jdbc:postgresql://localhost:5432/postgres"
+  val pgProperties = new Properties()
+  pgProperties.setProperty("user", "postgres")
+  pgProperties.setProperty("password", "1234")
+  pgProperties.setProperty("driver", "org.postgresql.Driver")
+
   val parseSource: Source => DataFrame = source => {
     source.`type` match {
       case "clickhouse" =>
         handleClickhouseSource(source.query.getOrElse(""))
       case "s3"         =>
         handleS3Source(source.bucket.getOrElse(""), source.filename.getOrElse(""))
-//      case "postgres"   =>
-//        handlePgSource(source.db.getOrElse(""), source.query.getOrElse(""))
+      case "postgres"   =>
+        handlePgSource(jdbcUrl, source.table.getOrElse(""), pgProperties)
       case unknownType  =>
         throw new Exception(s"Unsupported source type: $unknownType")
     }
@@ -37,8 +45,8 @@ class ELParser(
         handleClickhouseDestination(df, destination.table.getOrElse(""))
       case "s3"         =>
         handleS3Destination(df, destination.bucket.getOrElse(""), destination.filename.getOrElse(""))
-//      case "postgres"   =>
-//        handlePgDestination(df, destination.table.getOrElse(""), destination.query.getOrElse(""))
+      case "postgres"   =>
+        handlePgDestination(df, jdbcUrl: String, destination.table.getOrElse(""), pgProperties)
       case unknownType  =>
         throw new Exception(s"Unsupported destination type: $unknownType")
     }
@@ -57,9 +65,9 @@ class ELParser(
     sourceDF
   }
 
-//  private def handlePgSource(db: String, query: String): DataFrame = {
-//    ???
-//  }
+  private def handlePgSource(jdbcUrl: String, table: String, properties: Properties): DataFrame = {
+    Await.result(readDataPG(sparkSession, jdbcUrl, table, properties), 5.minutes)
+  }
 
   private def handleClickhouseDestination(df: DataFrame, table: String): Unit = {
     val ckhConnector = CKHConnector()
@@ -72,9 +80,9 @@ class ELParser(
     Await.result(s3Connector.writeDataS3(bucket, fileName, df), 5.minutes)
   }
 
-//  private def handlePgDestination(df: DataFrame, db: String, query: String): Unit = {
-//    ???
-//  }
+  private def handlePgDestination(df: DataFrame, jdbcUrl: String, table: String, pgProperties: Properties): Unit = {
+    writeDataPG(df, jdbcUrl, table, pgProperties)
+  }
 }
 
 object ELParser {
