@@ -1,73 +1,108 @@
 package com.neu.connectors
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import software.amazon.awssdk.auth.credentials.{AwsBasicCredentials, StaticCredentialsProvider}
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.s3.{S3Client, S3Configuration}
 import software.amazon.awssdk.services.s3.model._
+import software.amazon.awssdk.services.s3.{S3Client, S3Configuration}
 
-import scala.concurrent.{ExecutionContext, Future}
+import java.io.File
 import java.net.URI
-import scala.jdk.CollectionConverters.CollectionHasAsScala
+import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 class S3Connector(implicit system: ActorSystem, ec: ExecutionContext) {
-
-  // Configure LocalStack S3 client
-  private val s3Client: S3Client = S3Client.builder()
+  private val s3Client: S3Client = S3Client
+    .builder()
     .endpointOverride(new URI("http://localhost:4566"))
     .region(Region.US_EAST_1)
-    .credentialsProvider(StaticCredentialsProvider.create(
-      AwsBasicCredentials.create("test", "test")
-    ))
+    .credentialsProvider(
+      StaticCredentialsProvider.create(
+        AwsBasicCredentials.create("test", "test")
+      )
+    )
     .serviceConfiguration(S3Configuration.builder().pathStyleAccessEnabled(true).build())
     .build()
 
-  // Read CSV from a bucket
-  def readCSVFromBucket(bucketName: String, fileName: String): Future[String] = Future {
-    val getObjectRequest = GetObjectRequest.builder()
-      .bucket(bucketName)
-      .key(fileName)
-      .build()
-
-    // Get the file from S3
-    val response = s3Client.getObject(getObjectRequest)
-    scala.io.Source.fromInputStream(response).mkString
+  // Read CSV from S3 and load into a Spark DataFrame
+  def readDataS3(bucketName: String, fileName: String, schema: StructType)(implicit
+      spark: SparkSession
+  ): Future[DataFrame] = Future {
+    val s3Uri = s"s3a://$bucketName/$fileName"
+    println(s"Reading data from: $s3Uri")
+    spark.read.schema(schema).option("header", "true").csv(s3Uri)
   }
 
-  // Write CSV to a bucket
-  def writeCSVToBucket(bucketName: String, fileName: String, content: String): Future[String] = Future {
-    // Check if the bucket exists, and if not, create it
+  // Write Spark DataFrame to S3 bucket as CSV
+  def writeDataS3(bucketName: String, fileName: String, dataFrame: DataFrame): Future[Unit] = Future {
     try {
-      val listBucketsResponse = s3Client.listBuckets()
-      val bucketExists = listBucketsResponse.buckets().asScala.exists(_.name() == bucketName)
+      if (!doesBucketExist(bucketName)) createBucket(bucketName)
 
-      if (!bucketExists) {
-        val createBucketRequest = CreateBucketRequest.builder()
-          .bucket(bucketName)
-          .build()
-        s3Client.createBucket(createBucketRequest)
-        println(s"Bucket '$bucketName' created.")
-      }
+      // Create a temporary file instead of directory
+      val tempFile = File.createTempFile("dataframe-", ".csv")
+      tempFile.deleteOnExit()
 
-      // Upload the file content after ensuring the bucket exists
-      val putObjectRequest = PutObjectRequest.builder()
+      // Write DataFrame directly to a single CSV file
+      dataFrame
+        .coalesce(1) // Ensure single file output
+        .write
+        .option("header", "true")
+        .mode("overwrite")
+        .csv(tempFile.getParent + "/output")
+
+      // Find the actual CSV file in the output directory
+      val outputDir = new File(tempFile.getParent + "/output")
+      val csvFile   = outputDir.listFiles().find(_.getName.endsWith(".csv")).get
+
+      // Upload to S3
+      val putObjectRequest = PutObjectRequest
+        .builder()
         .bucket(bucketName)
         .key(fileName)
+        .contentType("text/csv")
         .build()
 
-      s3Client.putObject(putObjectRequest, RequestBody.fromString(content))
+      s3Client.putObject(putObjectRequest, RequestBody.fromFile(csvFile))
 
-      s"File '$fileName' uploaded to bucket '$bucketName'."
+      // Cleanup
+      csvFile.delete()
+      outputDir.delete()
+      tempFile.delete()
     } catch {
-      case ex: Exception =>
-        throw new RuntimeException(s"Error while checking or creating bucket: ${ex.getMessage}")
+      case e: Exception =>
+        println(s"Error uploading DataFrame to S3: ${e.getMessage}")
+        throw e
+    }
+  }
+
+  // Check if the bucket exists
+  private def doesBucketExist(bucketName: String): Boolean = {
+    try {
+      val listBucketsResponse = s3Client.listBuckets()
+      listBucketsResponse.buckets().asScala.exists(_.name() == bucketName)
+    } catch {
+      case e: Exception =>
+        println(s"Error checking bucket existence: ${e.getMessage}")
+        false
+    }
+  }
+  // Create a bucket
+  private def createBucket(bucketName: String): Unit       = {
+    try {
+      val createBucketRequest = CreateBucketRequest.builder().bucket(bucketName).build()
+      s3Client.createBucket(createBucketRequest)
+      println(s"Bucket '$bucketName' created.")
+    } catch {
+      case e: Exception =>
+        println(s"Error creating bucket: ${e.getMessage}")
+        throw e
     }
   }
 }
 
 object S3Connector {
-  def apply()(implicit system: ActorSystem, ec: ExecutionContext): S3Connector = {
-    new S3Connector()
-  }
+  def apply()(implicit system: ActorSystem, ec: ExecutionContext): S3Connector = new S3Connector()
 }
