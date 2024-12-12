@@ -42,6 +42,10 @@ libraryDependencies ++= Seq(
   // Database
   "com.crobox.clickhouse" %% "client" % "1.2.6",
   "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "6.0.1",
+  "com.typesafe.slick" %% "slick" % "3.4.1",
+  "org.postgresql" % "postgresql" % "42.6.0",
+  "org.apache.commons" % "commons-csv" % "1.10.0",
+
 
   // Configuration & Logging
   "com.typesafe" % "config" % "1.4.2",
