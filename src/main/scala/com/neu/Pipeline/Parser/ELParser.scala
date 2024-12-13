@@ -1,8 +1,8 @@
 package com.neu.Pipeline.Parser
 
 import java.util.Properties
-import com.neu.connectors.PGDataUtils.{readDataPG, writeDataPG}
-import com.neu.connectors.{CKHActions, CKHConnector, S3Connector}
+import com.neu.Connector.PGDataUtils.{readDataPG, writeDataPG}
+import com.neu.Connector.{CKHActions, CKHConnector, S3Connector}
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.stream.Materializer
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -66,7 +66,7 @@ class ELParser(
   }
 
   private def handlePgSource(jdbcUrl: String, table: String, properties: Properties): DataFrame = {
-    Await.result(readDataPG(sparkSession, jdbcUrl, table, properties), 5.minutes)
+    Await.result(readDataPG(sparkSession, jdbcUrl, ipSchema, table, properties), 5.minutes)
   }
 
   private def handleClickhouseDestination(df: DataFrame, table: String): Unit = {

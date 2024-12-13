@@ -8,12 +8,19 @@ pipeline:
       source:
           type: "clickhouse"
           table: "crime_data"
-          query: "SELECT * FROM crime_data FORMAT CSV"
+          query: "SELECT * FROM crime_data limit 50 FORMAT CSV"
       transformation:
           definition: "./docs/sample_transformation_config.yaml"
       quality_checks:
-        - type: "completeness"
-          rules: "completeness_rules.yaml"
+        - type: "null_check"
+          col: "borough"
+        - type: "type_check"
+          col: "year"
+          expected_type: "int"
+        - type: "range_check"
+          col: "value"
+          min: 0
+          max: 1000
       destination:
           type: "s3"
           bucket: "test"
@@ -30,8 +37,9 @@ pipeline:
       transformation:
           definition: "./docs/sample_transformation_config2.yaml"
       quality_checks:
-        - type: "completeness"
-          rules: "completeness_rules.yaml"
+        - type: "type_check"
+          col: "major_category"
+          expected_type: "string"
       destination:
           type: "clickhouse"
           table: "crime_data2"

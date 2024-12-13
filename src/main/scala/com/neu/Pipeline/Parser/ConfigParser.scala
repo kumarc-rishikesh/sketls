@@ -37,7 +37,10 @@ case class Transformations(
 
 case class QualityCheck(
     `type`: String,
-    rules: String
+    col: String,
+    min: Option[Int],
+    max: Option[Int],
+    expected_type: Option[String]
 )
 
 case class Destination(

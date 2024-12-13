@@ -1,4 +1,4 @@
-package com.neu.connectors
+package com.neu.Connector
 
 import org.apache.pekko.actor.ActorSystem
 import org.apache.spark.sql.types.StructType

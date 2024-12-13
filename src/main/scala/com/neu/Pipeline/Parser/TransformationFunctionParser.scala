@@ -1,4 +1,4 @@
-package com.neu.Pipeline.Parser.TParser
+package com.neu.Pipeline.Parser
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
