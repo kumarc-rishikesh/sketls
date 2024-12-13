@@ -30,6 +30,7 @@ libraryDependencies ++= Seq(
 
   // Testing
   "org.scalatest" %% "scalatest" % "3.2.19" % Test,
+  "org.mockito" %% "mockito-scala" % "1.17.12" % Test,
 
   // Spark
   "org.apache.spark" %% "spark-core" % sparkVersion,

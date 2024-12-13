@@ -1,6 +1,5 @@
-package com.neu
+package com.neu.qualitycheck
 
-import com.neu.qualitycheck.DataQualityChecks
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
@@ -12,8 +11,6 @@ class QualityCheckSpec extends AnyFunSuite {
     .appName("Quality Check Tests")
     .master("local[*]")
     .getOrCreate()
-
-  import spark.implicits._
 
   // Helper function to create a DataFrame from a sequence
   def createDataFrame(data: Seq[Map[String, Any]]): DataFrame = {
