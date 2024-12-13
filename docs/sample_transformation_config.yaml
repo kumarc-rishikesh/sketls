@@ -1,0 +1,30 @@
+name: "Transformation1"
+import:
+  "./docs/SampleScalaTransform.scala"
+
+inputs:
+  - [lsoa_code, String]
+  - [borough, String]
+  - [major_category, String]
+  - [minor_category, String]
+  - [value, Int]
+  - [year, Int]
+  - [month, Int]
+
+## input type MUST have functions that do not change datatype
+## if datatype changes must be made, use a derived type and drop the original column
+outputs:
+  -   col: "borough"
+      type: "input"
+      function: "toLower"
+  -   col: "dateYYYYMMStr"
+      type: "derived"
+      function: "toDateYYYYMM"
+      using: ["year", "month"]
+      datatype: "String"
+  -   col: "month"
+      type: "input"
+      function: "drop"
+  -   col: "year"
+      type: "input"
+      function: "drop"

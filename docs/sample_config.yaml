@@ -1,29 +1,45 @@
 pipeline:
-  name: "example_pipeline"
-  version: "1.0"
-  
-  sources:
-    - name: "source1"
-      type: "postgres"
-      query: "SELECT * FROM table"
-      
-  transformations:
-    - name: "transform1"
-      type: "sql"
-      definition: "transformation.sql"
-      
-  quality_checks:
-    - type: "completeness"
-      rules: "completeness_rules.yaml"
-      
-  destinations:
-    - name: "dest1"
-      type: "s3"
-      format: "parquet"
-      
-  monitoring:
-    prometheus:
-      enabled: true
-      metrics:
-        - pipeline_execution_time
-        - records_processed
+  name: "example_pipeline_1"
+  jobs:
+    - jobname: "example_job_1"
+      trigger:
+          type: "cron"
+          value: "0 1 * * *"
+      source:
+          type: "clickhouse"
+          table: "crime_data"
+          query: "SELECT * FROM crime_data limit 50 FORMAT CSV"
+      transformation:
+          definition: "./docs/sample_transformation_config.yaml"
+      quality_checks:
+        - type: "null_check"
+          col: "borough"
+        - type: "type_check"
+          col: "year"
+          expected_type: "int"
+        - type: "range_check"
+          col: "value"
+          min: 0
+          max: 1000
+      destination:
+          type: "s3"
+          bucket: "test"
+          filename: "xyz.csv"
+
+    - jobname: "example_job_2"
+      trigger:
+          type: "cron"
+          value: "10 1 * * *"
+      source:
+          type: "s3"
+          bucket: "test"
+          filename: "xyz.csv"
+      transformation:
+          definition: "./docs/sample_transformation_config2.yaml"
+      quality_checks:
+        - type: "type_check"
+          col: "major_category"
+          expected_type: "string"
+      destination:
+          type: "clickhouse"
+          table: "crime_data2"

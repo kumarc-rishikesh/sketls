@@ -1,0 +1,21 @@
+To Setup LocalStack locally and upload data (cvs file) to S3:
+
+Step 1: Install Docker for desktop
+Step 2: Install LocalStack for desktop
+Step 3: Install AWS CLI - need to configure AWS CLI to use LocalStack’s endpoint
+Step 4: Enable Docker extensions
+Step 5: In command prompt: Docker login
+Step 6: In command prompt: docker pull localstack/localstack-docker-desktop:latest
+Step 7: Go to Docker Extensions in Docker and install LocalStack
+Step 8: Add new configuration in LocalStack Docker Extension -
+				Configuration Name: scetls
+				DEBUG=0
+				PERSISTENCE=0
+				AWS_ACCESS_KEY_ID="test"
+				AWS_SECRET_ACCESS_KEY="test"
+				AWS_DEFAULT_REGION="us-east-1"
+				AWS_ENDPOINT_URL="http://localhost:4566"
+Step 9: Start running LocalStack
+Step 10: Go to LocalStack Desktop - You can see that the container is running
+Step 11: Click on the container and go to Resource Browser and open S3
+Step 12: Create a bucket named scetls and upload your file containing your data(csv file) to S3
