@@ -4,6 +4,7 @@ import io.circe.generic.auto._
 import io.circe.yaml.parser
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
+import scala.util.Try
 
 case class Transformation(
     name: String,
@@ -75,27 +76,34 @@ class TransformParser(transformation: Transformation, compiledFunctions: Any) {
 }
 
 object TransformParser {
-  def apply(filePath: String): Either[String, TransformParser] = {
-    try {
-      val source     = scala.io.Source.fromFile(filePath)
-      val yamlString = source.mkString
-      source.close()
-
-      parser.parse(yamlString).flatMap(_.as[Transformation]) match {
-        case Right(transformation) =>
-          val functionSource = scala.io.Source.fromFile(transformation.`import`)
-          val functionString = functionSource.mkString
-          functionSource.close()
-
-          val compiledFunctions = TransformationFunctionParser.compileFunction(functionString)
-
-          Right(new TransformParser(transformation, compiledFunctions))
-        case Left(error)           =>
-          Left(s"Failed to parse YAML: $error")
+  def apply(filePath: String): Try[TransformParser] = {
+    def readFile(path: String): Try[String] = {
+      Try {
+        val source = scala.io.Source.fromFile(path)
+        try {
+          source.mkString
+        } finally {
+          source.close()
+        }
       }
-    } catch {
-      case e: Exception =>
-        Left(s"Error reading file: ${e.getMessage}")
     }
+
+    for {
+      // Read and parse the main YAML file
+      yamlString        <- readFile(filePath)
+      transformation    <- Try(
+                             parser.parse(yamlString).flatMap(_.as[Transformation]) match {
+                               case Right(t)    => t
+                               case Left(error) => throw new RuntimeException(s"Failed to parse YAML: $error")
+                             }
+                           )
+
+      // Read and compile the function file
+      functionString    <- readFile(transformation.`import`)
+      compiledFunctions <- Try(TransformationFunctionParser.compileFunction(functionString))
+
+      // Create the TransformParser instance
+      transformParser <- Try(new TransformParser(transformation, compiledFunctions))
+    } yield transformParser
   }
 }
