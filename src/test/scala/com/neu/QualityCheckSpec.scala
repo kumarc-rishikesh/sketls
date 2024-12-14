@@ -1,6 +1,6 @@
 package com.neu
 
-import com.neu.qualitycheck.DataQualityChecks
+import com.neu.Qualitycheck.DataQualityChecks
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
