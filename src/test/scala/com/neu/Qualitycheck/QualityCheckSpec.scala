@@ -1,4 +1,4 @@
-package com.neu
+package com.neu.Qualitycheck
 
 import com.neu.Qualitycheck.DataQualityChecks
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
