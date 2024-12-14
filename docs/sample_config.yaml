@@ -2,53 +2,44 @@ pipeline:
   name: "example_pipeline_1"
   jobs:
     - jobname: "example_job_1"
-      
       trigger:
-        - type: "cron"
+          type: "cron"
           value: "0 1 * * *"
-      
-      sources:
-        - type: "postgres"
-          db: "db1"
-          query: "SELECT * FROM table"
-          
-      transformations:
-        - definition: "transformation.yaml"
-          
+      source:
+          type: "clickhouse"
+          table: "crime_data"
+          query: "SELECT * FROM crime_data limit 50 FORMAT CSV"
+      transformation:
+          definition: "./docs/sample_transformation_config.yaml"
       quality_checks:
-        - type: "completeness"
-          rules: "completeness_rules.yaml"
-          
-      destinations:
-        - type: "s3"
-          bucket: "bucket_name"
-          format: "jsonl"
-          
-      monitoring:
-        prometheus:
-          enabled: true
-          metrics:
-            - pipeline_execution_time
-            - records_processed
+        - type: "null_check"
+          col: "borough"
+        - type: "type_check"
+          col: "year"
+          expected_type: "int"
+        - type: "range_check"
+          col: "value"
+          min: 0
+          max: 1000
+      destination:
+          type: "s3"
+          bucket: "test"
+          filename: "xyz.csv"
 
     - jobname: "example_job_2"
-
       trigger:
-        - type: "dependent"
-          value: "job1"
-      
-      sources:
-        - type: "s3"
-          bucket: "bucket2"
-          
-      transformations:
-        - definition: "transformation2.yaml"
-          
+          type: "cron"
+          value: "10 1 * * *"
+      source:
+          type: "s3"
+          bucket: "test"
+          filename: "xyz.csv"
+      transformation:
+          definition: "./docs/sample_transformation_config2.yaml"
       quality_checks:
-        - type: "completeness"
-          rules: "completeness_rules.yaml"
-#.
-#.
-#.
-#.
-#.
+        - type: "type_check"
+          col: "major_category"
+          expected_type: "string"
+      destination:
+          type: "clickhouse"
+          table: "crime_data2"
