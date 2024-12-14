@@ -52,7 +52,19 @@ where
 where\
 `df`: The input dataframe\
 `ipFieldInfo`: Fields being used as inputs to this function. The fields **must** exist in the input data\
-`opFieldInfo`: A Tuple of the output column's name and the datatype of the output column. 
+`opFieldInfo`: A Tuple of the output column's name and the datatype of the output column.
+
+## Branching Guide
+New features go int `feat/` beanches derived from the `feature` branch. Documentation goes to `docs`. Bugfixes in `bugfix`. 
+The `dev` branch is meant for integration between the `feature` and the `bugfix` branch. Additional tests must be added to `testing/` branches.
+
+```declarative
+master <---- test <---- dev <---- feature <---- feat/
+              |          |
+              |          -------- bugfix <---- bug/
+              |
+              -- testing/
+```
 
 ## Future Work
 - Get rid of dangerous run-time reflection. Move to compile-time with macros instead. 
