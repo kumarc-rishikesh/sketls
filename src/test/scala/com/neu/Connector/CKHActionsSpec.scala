@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-class CKHActionsASpec extends AsyncFlatSpec with Matchers {
+class CKHActionsSpec extends AsyncFlatSpec with Matchers {
   implicit val system: ActorSystem = ActorSystem("CKHActionsTest")
   implicit val spark: SparkSession = SparkSession.builder()
     .master("local")
@@ -28,8 +28,8 @@ class CKHActionsASpec extends AsyncFlatSpec with Matchers {
   Await.result(connector.client.execute(createTableQuery), 5.minutes)
 
   val schema: StructType = StructType(Array(
-    StructField("column1", StringType, true),
-    StructField("column2", StringType, true)
+    StructField("column1", StringType, nullable = true),
+    StructField("column2", StringType, nullable = true)
   ))
 
   it should "write and read data from Clickhouse" in {

@@ -1,9 +1,8 @@
 package com.neu.Pipeline.Parser
 
-import cats.syntax.either._
-import io.circe.Error
 import io.circe.generic.auto._
 import io.circe.yaml.parser
+import scala.util.Try
 
 case class Pipeline(pipeline: Pipeline_)
 
@@ -52,10 +51,12 @@ case class Destination(
 )
 
 object ConfigParser {
-  def parsePipelineConfig(yamlString: String): Either[Error, Pipeline] = {
-    parser
-      .parse(yamlString)
-      .leftMap(err => err: Error)
-      .flatMap(_.as[Pipeline])
+  def parsePipelineConfig(yamlString: String): Try[Pipeline] = {
+    Try {
+      parser.parse(yamlString).flatMap(_.as[Pipeline]) match {
+        case Right(pipeline) => pipeline
+        case Left(error)     => throw new RuntimeException(s"Failed to parse pipeline config: ${error.getMessage}")
+      }
+    }
   }
 }
