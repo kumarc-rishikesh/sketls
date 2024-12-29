@@ -20,23 +20,24 @@ class PGDataUtilsSpec extends AnyWordSpec with Matchers with ScalaFutures with I
 
   "PGDataUtils" should {
     "read data from PostgreSQL" in {
-      val spark = mock[SparkSession]
-      val sparkContext = mock[SparkContext]
+      val spark           = mock[SparkSession]
+      val sparkContext    = mock[SparkContext]
       val dataFrameReader = mock[DataFrameReader]
 
-      val jdbcUrl = "jdbc:postgresql://localhost:5432/postgres"
-      val tableName = "london_crime_r_t"
+      val jdbcUrl    = "jdbc:postgresql://localhost:5432/postgres"
+      val tableName  = "london_crime_r_t"
       val properties = new Properties()
 
       // Mock DataFrame creation
-      val expectedSchema = StructType(Array(
-        StructField("lsoa_code", StringType, nullable = false),
-        StructField("borough", StringType, nullable = false),
-        StructField("major_category", StringType, nullable = false),
-        StructField("minor_category", StringType, nullable = false),
-        StructField("value", IntegerType, nullable = false),
-        StructField("year", IntegerType, nullable = false),
-        StructField("month", IntegerType, nullable = false)
+      val expectedSchema = StructType(
+        Array(
+          StructField("lsoa_code", StringType, nullable = false),
+          StructField("borough", StringType, nullable = false),
+          StructField("major_category", StringType, nullable = false),
+          StructField("minor_category", StringType, nullable = false),
+          StructField("value", IntegerType, nullable = false),
+          StructField("year", IntegerType, nullable = false),
+          StructField("month", IntegerType, nullable = false)
         )
       )
 
@@ -44,8 +45,9 @@ class PGDataUtilsSpec extends AnyWordSpec with Matchers with ScalaFutures with I
       val expectedData = Seq(
         Row("E01001116", "Croydon", "Burglary", "Burglary in Other Buildings", 0, 2016, 11),
         Row("E01001646", "Greenwich", "Violence Against the Person", "Other violence", 0, 2016, 11),
-        Row("E01000677", "Bromley", "Violence Against the Person", "Other violence", 0, 2015, 5))
-      val mockRdd = mock[RDD[Row]]
+        Row("E01000677", "Bromley", "Violence Against the Person", "Other violence", 0, 2015, 5)
+      )
+      val mockRdd      = mock[RDD[Row]]
       when(spark.sparkContext).thenReturn(sparkContext)
 
       when(sparkContext.parallelize(expectedData)).thenReturn(mockRdd)
@@ -68,21 +70,24 @@ class PGDataUtilsSpec extends AnyWordSpec with Matchers with ScalaFutures with I
         // In-memory testing
 
         // Initialize real SparkSession
-        val spark: SparkSession = SparkSession.builder()
+        val spark: SparkSession = SparkSession
+          .builder()
           .master("local[*]")
           .appName("Real DataFrame Writer Test")
           .getOrCreate()
 
         // Define schema for the DataFrame
-        val schema = StructType(Array(
-          StructField("lsoa_code", StringType, nullable = false),
-          StructField("borough", StringType, nullable = false),
-          StructField("major_category", StringType, nullable = false),
-          StructField("minor_category", StringType, nullable = false),
-          StructField("value", IntegerType, nullable = false),
-          StructField("year", IntegerType, nullable = false),
-          StructField("month", IntegerType, nullable = false)
-        ))
+        val schema = StructType(
+          Array(
+            StructField("lsoa_code", StringType, nullable = false),
+            StructField("borough", StringType, nullable = false),
+            StructField("major_category", StringType, nullable = false),
+            StructField("minor_category", StringType, nullable = false),
+            StructField("value", IntegerType, nullable = false),
+            StructField("year", IntegerType, nullable = false),
+            StructField("month", IntegerType, nullable = false)
+          )
+        )
 
         // Define data
         val data = Seq(
@@ -117,21 +122,24 @@ class PGDataUtilsSpec extends AnyWordSpec with Matchers with ScalaFutures with I
         // In-memory testing
 
         // Initialize the real SparkSession
-        val spark: SparkSession = SparkSession.builder()
+        val spark: SparkSession = SparkSession
+          .builder()
           .master("local[*]")
           .appName("Negative DataFrame Writer Test")
           .getOrCreate()
 
         // Define the schema for the DataFrame
-        val schema = StructType(Array(
-          StructField("lsoa_code", StringType, nullable = false),
-          StructField("borough", StringType, nullable = false),
-          StructField("major_category", StringType, nullable = false),
-          StructField("minor_category", StringType, nullable = false),
-          StructField("value", IntegerType, nullable = false),
-          StructField("year", IntegerType, nullable = false),
-          StructField("month", IntegerType, nullable = false)
-        ))
+        val schema = StructType(
+          Array(
+            StructField("lsoa_code", StringType, nullable = false),
+            StructField("borough", StringType, nullable = false),
+            StructField("major_category", StringType, nullable = false),
+            StructField("minor_category", StringType, nullable = false),
+            StructField("value", IntegerType, nullable = false),
+            StructField("year", IntegerType, nullable = false),
+            StructField("month", IntegerType, nullable = false)
+          )
+        )
 
         // Define data
         val data = Seq(
@@ -147,7 +155,7 @@ class PGDataUtilsSpec extends AnyWordSpec with Matchers with ScalaFutures with I
         intercept[Exception] {
           df.write
             .format("jdbc")
-            .option("url", "jdbc:invalidurl")  // Invalid JDBC URL
+            .option("url", "jdbc:invalidurl") // Invalid JDBC URL
             .option("dbtable", "london_crime_w_t")
             .option("user", "postgres")
             .option("password", "1234")
@@ -162,19 +170,20 @@ class PGDataUtilsSpec extends AnyWordSpec with Matchers with ScalaFutures with I
 
     "PGDataUtils" should {
       "handle failure to read data from PostgreSQL gracefully" in {
-        val spark = mock[SparkSession]
+        val spark           = mock[SparkSession]
         val dataFrameReader = mock[DataFrameReader]
 
         // Set up invalid configurations or mocking scenarios
-        val jdbcUrl = "jdbc:postgresql://invalid:5432/postgres"
-        val tableName = "london_crime_r_t"
+        val jdbcUrl    = "jdbc:postgresql://invalid:5432/postgres"
+        val tableName  = "london_crime_r_t"
         val properties = new Properties()
 
         // Configure mocks to throw an exception
         when(spark.read).thenReturn(dataFrameReader)
 
         doThrow(new RuntimeException("Invalid database URL or credentials"))
-          .when(dataFrameReader).jdbc(any[String](), any[String](), any[Properties]())
+          .when(dataFrameReader)
+          .jdbc(any[String](), any[String](), any[Properties]())
 
         // Simulate the reading operation and handle expected exception
         intercept[RuntimeException] {

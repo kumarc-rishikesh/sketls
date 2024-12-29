@@ -93,7 +93,7 @@ class ConfigParserSpec extends AnyFlatSpec with Matchers {
     result.isSuccess should be(true)
 
     val pipeline = result.get
-    val job1 = pipeline.pipeline.jobs.head
+    val job1     = pipeline.pipeline.jobs.head
 
     job1.quality_checks should have size 3
 

@@ -23,14 +23,16 @@ class TransformParserSpec extends AnyFlatSpec with Matchers {
   )
 
   val mockCompiledFunctions = new Object()
-  val transformParser = new TransformParser(sampleTransformation, mockCompiledFunctions)
+  val transformParser       = new TransformParser(sampleTransformation, mockCompiledFunctions)
 
   "TransformParser.inputToStruct" should "create correct StructType from input definitions" in {
-    val expectedSchema = StructType(Array(
-      StructField("id", IntegerType, nullable = false),
-      StructField("name", StringType, nullable = false),
-      StructField("age", IntegerType, nullable = false)
-    ))
+    val expectedSchema = StructType(
+      Array(
+        StructField("id", IntegerType, nullable = false),
+        StructField("name", StringType, nullable = false),
+        StructField("age", IntegerType, nullable = false)
+      )
+    )
 
     val resultSchema = transformParser.inputToStruct
 
@@ -52,17 +54,21 @@ class TransformParserSpec extends AnyFlatSpec with Matchers {
   }
 
   "TransformParser.outputToStruct" should "transform input schema according to output definitions" in {
-    val inputSchema = StructType(Array(
-      StructField("id", IntegerType, nullable = false),
-      StructField("name", StringType, nullable = false),
-      StructField("age", IntegerType, nullable = false)
-    ))
+    val inputSchema = StructType(
+      Array(
+        StructField("id", IntegerType, nullable = false),
+        StructField("name", StringType, nullable = false),
+        StructField("age", IntegerType, nullable = false)
+      )
+    )
 
-    val expectedSchema = StructType(Array(
-      StructField("name", StringType, nullable = false),
-      StructField("age", IntegerType, nullable = false),
-      StructField("full_name", StringType, nullable = false)
-    ))
+    val expectedSchema = StructType(
+      Array(
+        StructField("name", StringType, nullable = false),
+        StructField("age", IntegerType, nullable = false),
+        StructField("full_name", StringType, nullable = false)
+      )
+    )
 
     val resultSchema = transformParser.outputToStruct(inputSchema)
 
@@ -70,7 +76,7 @@ class TransformParserSpec extends AnyFlatSpec with Matchers {
     resultSchema should be(expectedSchema)
 
     // Verify that 'id' field is dropped
-    resultSchema.fields.map(_.name) should not contain("id")
+    resultSchema.fields.map(_.name) should not contain ("id")
 
     // Verify that 'full_name' field is added
     val fullNameField = resultSchema.fields.find(_.name == "full_name")

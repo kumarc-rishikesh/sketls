@@ -11,7 +11,8 @@ class TransformationFunctionParserSpec extends AnyFunSuite with BeforeAndAfterAl
   private var spark: SparkSession = _
 
   override def beforeAll(): Unit = {
-    spark = SparkSession.builder()
+    spark = SparkSession
+      .builder()
       .appName("TransformationFunctionParserTest")
       .master("local[*]")
       .getOrCreate()
@@ -24,12 +25,14 @@ class TransformationFunctionParserSpec extends AnyFunSuite with BeforeAndAfterAl
   }
   test("toLower function compilation and execution") {
     // Create test data
-    val testData = spark.createDataFrame(Seq(
-      ("ID1", "HELLO"),
-      ("ID2", "WORLD")
-    )).toDF("id", "text")
-
-
+    val testData = spark
+      .createDataFrame(
+        Seq(
+          ("ID1", "HELLO"),
+          ("ID2", "WORLD")
+        )
+      )
+      .toDF("id", "text")
 
     val functionSource = """
     import org.apache.spark.sql.DataFrame
@@ -50,21 +53,28 @@ class TransformationFunctionParserSpec extends AnyFunSuite with BeforeAndAfterAl
 
     val result = toLowerFn(testData, "text")
 
-    val expected = spark.createDataFrame(Seq(
-      ("ID1", "hello"),
-      ("ID2", "world")
-    )).toDF("id", "text")
+    val expected = spark
+      .createDataFrame(
+        Seq(
+          ("ID1", "hello"),
+          ("ID2", "world")
+        )
+      )
+      .toDF("id", "text")
 
     assert(result.collect().toSet == expected.collect().toSet)
   }
 
-
   test("dateYYYYMMStr function compilation and execution") {
     // Create test data
-    val testData = spark.createDataFrame(Seq(
-      ("E01001116", 2016, 11),
-      ("E01001646", 2015, 5)
-    )).toDF("lsoa_code", "year", "month")
+    val testData = spark
+      .createDataFrame(
+        Seq(
+          ("E01001116", 2016, 11),
+          ("E01001646", 2015, 5)
+        )
+      )
+      .toDF("lsoa_code", "year", "month")
 
     // Source code of the function we want to compile
     val functionSource = """
@@ -103,10 +113,14 @@ class TransformationFunctionParserSpec extends AnyFunSuite with BeforeAndAfterAl
     )
 
     // Create expected DataFrame
-    val expected = spark.createDataFrame(Seq(
-      ("E01001116", 2016, 11, "2016-11"),
-      ("E01001646", 2015, 5, "2015-5")
-    )).toDF("lsoa_code", "year", "month", "year_month")
+    val expected = spark
+      .createDataFrame(
+        Seq(
+          ("E01001116", 2016, 11, "2016-11"),
+          ("E01001646", 2015, 5, "2015-5")
+        )
+      )
+      .toDF("lsoa_code", "year", "month", "year_month")
 
     // Compare DataFrames
     assert(result.collect().toSet == expected.collect().toSet)

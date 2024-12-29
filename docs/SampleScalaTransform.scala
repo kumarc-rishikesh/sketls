@@ -12,14 +12,12 @@ object Functions {
   }
 
   def toDateYYYYMM(df: DataFrame, ipFieldInfo: Seq[String], opFieldInfo: (String, DataType)): DataFrame = {
-    val yearCol = ipFieldInfo(0)
-    val monthCol = ipFieldInfo(1)
+    val yearCol     = ipFieldInfo(0)
+    val monthCol    = ipFieldInfo(1)
     val opFieldName = opFieldInfo._1
     val opFieldType = opFieldInfo._2
-    df.withColumn(opFieldName,
-      concat_ws("-", col(yearCol).cast(opFieldType), col(monthCol).cast(opFieldType)))
+    df.withColumn(opFieldName, concat_ws("-", col(yearCol).cast(opFieldType), col(monthCol).cast(opFieldType)))
   }
 }
 
 Functions
-

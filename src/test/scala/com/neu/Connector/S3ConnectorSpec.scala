@@ -9,18 +9,18 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.time.{Seconds, Span}
 
-
 import scala.concurrent.ExecutionContext
 
 class S3ConnectorSpec extends AnyFlatSpec with Matchers with ScalaFutures with BeforeAndAfterAll {
 
-  implicit val system: ActorSystem = ActorSystem("S3ConnectorSpec")
+  implicit val system: ActorSystem  = ActorSystem("S3ConnectorSpec")
   implicit val ec: ExecutionContext = system.dispatcher
 
   // Configure patience for async operations
   implicit val patience: PatienceConfig = PatienceConfig(timeout = Span(10, Seconds))
 
-  implicit val sparkSession: SparkSession = SparkSession.builder()
+  implicit val sparkSession: SparkSession = SparkSession
+    .builder()
     .appName("S3ConnectorSpec")
     .config("spark.master", "local[*]")
     .config("spark.hadoop.fs.s3a.endpoint", "http://localhost:4566")
@@ -37,7 +37,7 @@ class S3ConnectorSpec extends AnyFlatSpec with Matchers with ScalaFutures with B
   val s3Connector: S3Connector = S3Connector()(system, ec)
 
   val testBucketName = "test-bucket"
-  val testFileName = "test-file.csv"
+  val testFileName   = "test-file.csv"
 
   override def afterAll(): Unit = {
     sparkSession.stop()
@@ -45,14 +45,16 @@ class S3ConnectorSpec extends AnyFlatSpec with Matchers with ScalaFutures with B
   }
 
   "S3Connector" should "read data from S3 with correct schema" in {
-    val schema = StructType(Seq(
-      StructField("id", StringType, nullable = true),
-      StructField("name", StringType, nullable = true)
-    ))
+    val schema = StructType(
+      Seq(
+        StructField("id", StringType, nullable = true),
+        StructField("name", StringType, nullable = true)
+      )
+    )
 
     // Create test data and write it to S3 first
     val testData = Seq(("1", "John"), ("2", "Jane"))
-    val testDf = sparkSession.createDataFrame(testData).toDF("id", "name")
+    val testDf   = sparkSession.createDataFrame(testData).toDF("id", "name")
 
     // Write test data
     whenReady(s3Connector.writeDataS3(testBucketName, testFileName, testDf)) { _ =>
@@ -74,16 +76,18 @@ class S3ConnectorSpec extends AnyFlatSpec with Matchers with ScalaFutures with B
 
   it should "write DataFrame to S3 successfully" in {
     val testData = Seq(("3", "Alice"), ("4", "Bob"))
-    val df = sparkSession.createDataFrame(testData).toDF("id", "name")
+    val df       = sparkSession.createDataFrame(testData).toDF("id", "name")
 
     val writeResult = s3Connector.writeDataS3(testBucketName, "output.csv", df)
 
     whenReady(writeResult) { _ =>
       // Verify the file exists in S3 by trying to read it back
-      val schema = StructType(Seq(
-        StructField("id", StringType, nullable = true),
-        StructField("name", StringType, nullable = true)
-      ))
+      val schema = StructType(
+        Seq(
+          StructField("id", StringType, nullable = true),
+          StructField("name", StringType, nullable = true)
+        )
+      )
 
       whenReady(s3Connector.readDataS3(testBucketName, "output.csv", schema)) { resultDf =>
         val rows = resultDf.collect()
